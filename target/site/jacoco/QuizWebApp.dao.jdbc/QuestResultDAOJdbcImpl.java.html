@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>QuestResultDAOJdbcImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">QuizWebApp</a> &gt; <a href="index.source.html" class="el_package">QuizWebApp.dao.jdbc</a> &gt; <span class="el_source">QuestResultDAOJdbcImpl.java</span></div><h1>QuestResultDAOJdbcImpl.java</h1><pre class="source lang-java linenums">package QuizWebApp.dao.jdbc;
+
+import QuizWebApp.dao.QuestResultDAO;
+import QuizWebApp.domain.QuestResult;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
+
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+
+@Repository
+public class QuestResultDAOJdbcImpl implements QuestResultDAO {
+    JdbcTemplate jdbcTemplate;
+    QuestResultRowMapper rowMapper;
+    NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
+    @Autowired
+<span class="nc" id="L25">    public QuestResultDAOJdbcImpl(JdbcTemplate jdbcTemplate, QuestResultRowMapper rowMapper, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {</span>
+<span class="nc" id="L26">        this.jdbcTemplate = jdbcTemplate;</span>
+<span class="nc" id="L27">        this.rowMapper = rowMapper;</span>
+<span class="nc" id="L28">        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;</span>
+<span class="nc" id="L29">    }</span>
+
+    public List&lt;QuestResult&gt; getQuestResultByQuizId(int id) {
+<span class="nc" id="L32">        String query = &quot;SELECT * FROM questresult WHERE quizresult_id = ?&quot;;</span>
+<span class="nc" id="L33">        List&lt;QuestResult&gt; questResults = jdbcTemplate.query(query, rowMapper, id);</span>
+<span class="nc" id="L34">        return questResults;</span>
+    }
+    public void createQuestResults(List&lt;QuestResult&gt; questResultListList) {
+<span class="nc" id="L37">        String query = &quot;INSERT INTO questresult (quizresult_id, question_id, user_choice) values (?, ?, ?)&quot;;</span>
+<span class="nc" id="L38">        jdbcTemplate.batchUpdate(query, new BatchPreparedStatementSetter() {</span>
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+<span class="nc" id="L41">                QuestResult questResult = questResultListList.get(i);</span>
+<span class="nc" id="L42">                ps.setInt(1, questResult.getQuizResultId());</span>
+<span class="nc" id="L43">                ps.setInt(2, questResult.getQuestionId());</span>
+<span class="nc" id="L44">                ps.setString(3, questResult.getUserChoice());</span>
+<span class="nc" id="L45">            }</span>
+
+            @Override
+            public int getBatchSize() {
+<span class="nc" id="L49">                return questResultListList.size();</span>
+            }
+        });
+<span class="nc" id="L52">    }</span>
+}
+
+
+@Component
+<span class="nc" id="L57">class QuestResultRowMapper implements RowMapper&lt;QuestResult&gt; {</span>
+
+    @Override
+    public QuestResult mapRow(ResultSet rs, int rowNum) throws SQLException {
+<span class="nc" id="L61">        QuestResult questResult = new QuestResult();</span>
+<span class="nc" id="L62">        questResult.setId(rs.getInt(&quot;questresult_id&quot;));</span>
+<span class="nc" id="L63">        questResult.setQuestionId(rs.getInt(&quot;question_id&quot;));</span>
+<span class="nc" id="L64">        questResult.setUserChoice(rs.getString(&quot;user_choice&quot;));</span>
+<span class="nc" id="L65">        questResult.setQuizResultId(rs.getInt(&quot;quizresult_id&quot;));</span>
+
+<span class="nc" id="L67">        return questResult;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

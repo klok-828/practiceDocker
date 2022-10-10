@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ApiController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">QuizWebApp</a> &gt; <a href="index.source.html" class="el_package">QuizWebApp.controller</a> &gt; <span class="el_source">ApiController.java</span></div><h1>ApiController.java</h1><pre class="source lang-java linenums">package QuizWebApp.controller;
+
+import QuizWebApp.domain.QuizResult;
+import QuizWebApp.domain.User;
+import QuizWebApp.domain.request.LoginRequest;
+import QuizWebApp.domain.response.LoginResponse;
+import QuizWebApp.security.AuthUserDetail;
+import QuizWebApp.security.JwtProvider;
+import QuizWebApp.service.ResultService;
+import QuizWebApp.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping(&quot;api&quot;)
+public class ApiController {
+    private UserService userService;
+    private ResultService resultService;
+
+    private AuthenticationManager authenticationManager;
+
+    private JwtProvider jwtProvider;
+
+    @Autowired
+    public void setJwtProvider(JwtProvider jwtProvider) {
+<span class="nc" id="L36">        this.jwtProvider = jwtProvider;</span>
+<span class="nc" id="L37">    }</span>
+
+    @Autowired
+    public void setAuthenticationManager(AuthenticationManager authenticationManager) {
+<span class="nc" id="L41">        this.authenticationManager = authenticationManager;</span>
+<span class="nc" id="L42">    }</span>
+
+<span class="nc" id="L44">    public ApiController(UserService userService, ResultService resultService) {</span>
+<span class="nc" id="L45">        this.userService = userService;</span>
+<span class="nc" id="L46">        this.resultService = resultService;</span>
+<span class="nc" id="L47">    }</span>
+
+    @GetMapping(&quot;/test&quot;)
+    public Object getAuthUserDetail(){
+<span class="nc" id="L51">        return SecurityContextHolder.getContext().getAuthentication();</span>
+    }
+
+
+    @PostMapping(&quot;auth/login&quot;)
+    public LoginResponse login(@RequestBody LoginRequest request){
+
+        Authentication authentication;
+
+        //Try to authenticate the user using the username and password
+        try{
+<span class="nc" id="L62">            authentication = authenticationManager.authenticate(</span>
+<span class="nc" id="L63">                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())</span>
+            );
+<span class="nc" id="L65">        } catch (AuthenticationException e){</span>
+<span class="nc" id="L66">            throw new BadCredentialsException(&quot;Provided credential is invalid.&quot;);</span>
+<span class="nc" id="L67">        }</span>
+
+        //Successfully authenticated user will be stored in the authUserDetail object
+<span class="nc" id="L70">        AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal(); //getPrincipal() returns the user object</span>
+
+        //A token wil be created using the username/email/userId and permission
+<span class="nc" id="L73">        String token = jwtProvider.createToken(authUserDetail);</span>
+
+        //Returns the token as a response to the frontend/postman
+<span class="nc" id="L76">        return LoginResponse.builder()</span>
+<span class="nc" id="L77">                .message(&quot;Successfully Authenticated&quot;)</span>
+<span class="nc" id="L78">                .token(token)</span>
+<span class="nc" id="L79">                .build();</span>
+
+    }
+
+    @GetMapping(&quot;user&quot;)
+    public List&lt;User&gt; getUsers() {
+<span class="nc" id="L85">        return userService.getAllUsers();</span>
+    }
+
+    @GetMapping(&quot;user/{userId}&quot;)
+    public User getUserById(@PathVariable int userId) {
+<span class="nc" id="L90">        List&lt;User&gt; userList = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L91">        userList = userService.getAllUsers();</span>
+
+<span class="nc bnc" id="L93" title="All 2 branches missed.">        userList = userList.stream().filter(user -&gt; user.getId() == userId).collect(Collectors.toList());</span>
+<span class="nc" id="L94">        System.out.println(userId);</span>
+<span class="nc" id="L95">        System.out.println(userList.get(0));</span>
+
+<span class="nc" id="L97">        return userList.get(0);</span>
+    }
+
+    @GetMapping(&quot;permission/{userId}&quot;)
+    public List&lt;String&gt; getPermissionByUserId(@PathVariable int userId) {
+<span class="nc" id="L102">        return userService.getUserPermissionById(userId);</span>
+    }
+
+    @GetMapping(&quot;quiz/{userId}&quot;)
+    public List&lt;QuizResult&gt; getQuizzesByUserId(@PathVariable int userId) {
+<span class="nc" id="L107">        return resultService.getQuizResultByUserId(userId);</span>
+    }
+
+    @PatchMapping(&quot;/user/{userId}/status&quot;)
+    public String updateUserStatus(@PathVariable int userId) {
+<span class="nc" id="L112">        userService.reverseUserStatusById(userId);</span>
+<span class="nc" id="L113">        return &quot;Status updated&quot;;</span>
+    }
+
+
+    @PostMapping(&quot;user&quot;)
+    public String createUser(@RequestBody User newUser) {
+<span class="nc" id="L119">        System.out.println(newUser);</span>
+<span class="nc" id="L120">        userService.createNewUser(newUser);</span>
+<span class="nc" id="L121">        return &quot;User created&quot;;</span>
+    }
+
+    @DeleteMapping(&quot;user/{userId}&quot;)
+    public String deleteUser(@PathVariable int userId) {
+<span class="nc" id="L126">        userService.deleteUserById(userId);</span>
+<span class="nc" id="L127">        return &quot;user deleted&quot;;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">QuizWebApp</a> &gt; <a href="index.source.html" class="el_package">QuizWebApp.service</a> &gt; <span class="el_source">UserService.java</span></div><h1>UserService.java</h1><pre class="source lang-java linenums">package QuizWebApp.service;
+
+import QuizWebApp.dao.UserDAO;
+import QuizWebApp.domain.User;
+import QuizWebApp.security.AuthUserDetail;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import javax.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+<span class="nc" id="L22">public class UserService implements UserDetailsService {</span>
+    private UserDAO userJdbcDAO;
+    private UserDAO userHibernateDAO;
+
+    @Autowired
+    public void setUserJdbcDAO(@Qualifier(&quot;userDAOJdbcImpl&quot;) UserDAO userJdbcDAO) {
+<span class="nc" id="L28">        this.userJdbcDAO = userJdbcDAO;</span>
+<span class="nc" id="L29">    }</span>
+
+    @Autowired
+    @Qualifier(&quot;userDAOHibernateImpl&quot;)
+    public void setUserHibernateDAO(UserDAO userHibernateDAO) {
+<span class="nc" id="L34">        this.userHibernateDAO = userHibernateDAO;</span>
+<span class="nc" id="L35">    }</span>
+<span class="nc" id="L36">    public void reverseUserStatusById(int id) { userJdbcDAO.updateUserStatusById(id); }</span>
+
+<span class="nc" id="L38">    public void deleteUserById(int id) { userJdbcDAO.deleteUserById(id); }</span>
+    @Transactional
+<span class="nc" id="L40">    public List&lt;User&gt; getAllUsers() { return userHibernateDAO.getAllUsers(); }</span>
+    @Transactional
+<span class="nc" id="L42">    public void createNewUser(User user) { userJdbcDAO.createNewUser(user); }</span>
+    @Transactional
+    public Optional&lt;User&gt; validateUser(String email, String password) {
+<span class="nc" id="L45">        return userJdbcDAO.getAllUsers().stream()</span>
+<span class="nc bnc" id="L46" title="All 2 branches missed.">                .filter(user -&gt; user.getEmail().equals(email)</span>
+<span class="nc bnc" id="L47" title="All 2 branches missed.">                                &amp;&amp; user.getPassword().equals(password)</span>
+<span class="nc bnc" id="L48" title="All 2 branches missed.">                                &amp;&amp; user.isActive())</span>
+<span class="nc" id="L49">                .findAny();</span>
+    }
+
+    @Transactional
+    public List&lt;String&gt; getUserPermissionById(int id) {
+<span class="nc" id="L54">        return userJdbcDAO.getPermissionsByUserId(id);</span>
+    }
+
+    @Transactional
+    public Optional&lt;User&gt; validateAdmin(String email, String password) {
+<span class="nc" id="L59">        return userJdbcDAO.getAllUsers().stream()</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">                .filter(user -&gt; user.getEmail().equals(email)</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">                        &amp;&amp; user.getPassword().equals(password)</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">                        &amp;&amp; user.isActive()</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">                        &amp;&amp; user.isAdmin())</span>
+<span class="nc" id="L64">                .findAny();</span>
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+<span class="nc" id="L69">        Optional&lt;User&gt; userOptional = userJdbcDAO.loadUserByEmail(email);</span>
+
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        if (!userOptional.isPresent()){</span>
+<span class="nc" id="L72">            throw new UsernameNotFoundException(&quot;Username does not exist&quot;);</span>
+        }
+
+<span class="nc" id="L75">        User user = userOptional.get(); // database user</span>
+
+<span class="nc" id="L77">        return AuthUserDetail.builder() // spring security's userDetail</span>
+<span class="nc" id="L78">                .email(user.getEmail())</span>
+<span class="nc" id="L79">                .password(new BCryptPasswordEncoder().encode(user.getPassword()))</span>
+<span class="nc" id="L80">                .authorities(getAuthoritiesFromUser(user))</span>
+<span class="nc" id="L81">                .accountNonExpired(true)</span>
+<span class="nc" id="L82">                .accountNonLocked(true)</span>
+<span class="nc" id="L83">                .credentialsNonExpired(true)</span>
+<span class="nc" id="L84">                .enabled(true)</span>
+<span class="nc" id="L85">                .build();</span>
+    }
+
+    private List&lt;GrantedAuthority&gt; getAuthoritiesFromUser(User user){
+<span class="nc" id="L89">        List&lt;GrantedAuthority&gt; userAuthorities = new ArrayList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L91" title="All 2 branches missed.">        for (String permission :  getUserPermissionById(user.getId())){</span>
+<span class="nc" id="L92">            userAuthorities.add(new SimpleGrantedAuthority(permission));</span>
+<span class="nc" id="L93">        }</span>
+
+<span class="nc" id="L95">        return userAuthorities;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

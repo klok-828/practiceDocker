@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ChoiceDAOJdbcImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">QuizWebApp</a> &gt; <a href="index.source.html" class="el_package">QuizWebApp.dao.jdbc</a> &gt; <span class="el_source">ChoiceDAOJdbcImpl.java</span></div><h1>ChoiceDAOJdbcImpl.java</h1><pre class="source lang-java linenums">package QuizWebApp.dao.jdbc;
+
+import QuizWebApp.dao.ChoiceDAO;
+import QuizWebApp.domain.Choice;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
+
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+
+@Repository(&quot;choiceDAOJdbcImpl&quot;)
+public class ChoiceDAOJdbcImpl implements ChoiceDAO {
+
+    JdbcTemplate jdbcTemplate;
+    ChoiceRowMapper rowMapper;
+    NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
+
+<span class="nc" id="L25">    public ChoiceDAOJdbcImpl(JdbcTemplate jdbcTemplate, ChoiceRowMapper rowMapper, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {</span>
+<span class="nc" id="L26">        this.jdbcTemplate = jdbcTemplate;</span>
+<span class="nc" id="L27">        this.rowMapper = rowMapper;</span>
+<span class="nc" id="L28">        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;</span>
+<span class="nc" id="L29">    }</span>
+
+    public String getAnswerByQuestionId(int id) {
+<span class="nc" id="L32">        String query = &quot;SELECT description FROM choice WHERE question_id = ? AND is_answer = 1&quot;;</span>
+<span class="nc" id="L33">        return jdbcTemplate.queryForObject(query, String.class, id);</span>
+    }
+    public void createNewChoices(List&lt;Choice&gt; choiceList) {
+<span class="nc" id="L36">        String query = &quot;INSERT INTO choice (question_id, description, is_answer) values (?, ?, ?)&quot;;</span>
+<span class="nc" id="L37">        jdbcTemplate.batchUpdate(query, new BatchPreparedStatementSetter() {</span>
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+<span class="nc" id="L40">                Choice choice = choiceList.get(i);</span>
+<span class="nc" id="L41">                ps.setInt(1, choice.getQuestion_id());</span>
+<span class="nc" id="L42">                ps.setString(2, choice.getDescription());</span>
+<span class="nc" id="L43">                ps.setBoolean(3, choice.is_answer());</span>
+<span class="nc" id="L44">            }</span>
+
+            @Override
+            public int getBatchSize() {
+<span class="nc" id="L48">                return choiceList.size();</span>
+            }
+        });
+<span class="nc" id="L51">    }</span>
+
+    public List&lt;Choice&gt; getChoicesByQuestionId(int id) {
+<span class="nc" id="L54">        String query = &quot;SELECT * FROM choice WHERE question_id = ?&quot;;</span>
+<span class="nc" id="L55">        List&lt;Choice&gt; choices = jdbcTemplate.query(query, rowMapper, id);</span>
+<span class="nc" id="L56">        return choices;</span>
+    }
+}
+
+@Component
+<span class="nc" id="L61">class ChoiceRowMapper implements RowMapper&lt;Choice&gt; {</span>
+
+    @Override
+    public Choice mapRow(ResultSet rs, int rowNum) throws SQLException {
+<span class="nc" id="L65">        Choice choice = new Choice();</span>
+<span class="nc" id="L66">        choice.setId(rs.getInt(&quot;choice_id&quot;));</span>
+<span class="nc" id="L67">        choice.setQuestion_id(rs.getInt(&quot;question_id&quot;));</span>
+<span class="nc" id="L68">        choice.setDescription(rs.getString(&quot;description&quot;));</span>
+<span class="nc" id="L69">        choice.set_answer(rs.getBoolean(&quot;is_answer&quot;));</span>
+
+<span class="nc" id="L71">        return choice;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

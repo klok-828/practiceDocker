@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>QuizController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">QuizWebApp</a> &gt; <a href="index.source.html" class="el_package">QuizWebApp.controller</a> &gt; <span class="el_source">QuizController.java</span></div><h1>QuizController.java</h1><pre class="source lang-java linenums">package QuizWebApp.controller;
+
+import QuizWebApp.domain.*;
+import QuizWebApp.service.QuestionService;
+import QuizWebApp.service.ResultService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+
+@Controller
+public class QuizController {
+    private QuestionService questionService;
+    private ResultService resultService;
+
+    @Autowired
+<span class="nc" id="L23">    QuizController(QuestionService questionService, ResultService resultService) {</span>
+<span class="nc" id="L24">        this.questionService = questionService;</span>
+<span class="nc" id="L25">        this.resultService = resultService;</span>
+<span class="nc" id="L26">    }</span>
+
+
+    @GetMapping(&quot;/quiz&quot;)
+    public String getQuiz(@RequestParam String selectedCategory,
+                          HttpServletRequest request,
+                          Model model) {
+
+<span class="nc" id="L34">        HttpSession session = request.getSession();</span>
+
+<span class="nc" id="L36">        List&lt;Question&gt; quizQuestions = questionService.getRandomQuestionsByCategory(selectedCategory);</span>
+
+<span class="nc" id="L38">        session.setAttribute(&quot;quizQuestions&quot;, quizQuestions);</span>
+<span class="nc" id="L39">        session.setAttribute(&quot;selectedCategory&quot;, selectedCategory);</span>
+
+<span class="nc" id="L41">        System.out.println(quizQuestions);</span>
+
+<span class="nc" id="L43">        model.addAttribute(&quot;quizQuestions&quot;, quizQuestions);</span>
+<span class="nc" id="L44">        return &quot;quiz&quot;;</span>
+    }
+
+
+    @PostMapping(&quot;/quiz&quot;)
+    public String postQuiz(
+                           HttpSession session) {
+
+<span class="nc" id="L52">        return &quot;redirect:/quiz-result&quot;;</span>
+    }
+
+
+    @GetMapping(&quot;/quiz-question1&quot;)
+    public String getQuestion1(HttpServletRequest request,
+                               @RequestParam(defaultValue = &quot;s&quot;) String selectedQ1Choice,
+                               Model model) {
+<span class="nc" id="L60">        Timestamp quizStartTime = new Timestamp(System.currentTimeMillis());</span>
+
+<span class="nc" id="L62">        HttpSession session = request.getSession();</span>
+<span class="nc" id="L63">        List&lt;Question&gt; ss = (List&lt;Question&gt;) session.getAttribute(&quot;quizQuestions&quot;);</span>
+<span class="nc" id="L64">        List&lt;Choice&gt; question1Choices = questionService.getChoicesByQuestionId(ss.get(0).getId());</span>
+
+<span class="nc" id="L66">        session.setAttribute(&quot;quizStartTime&quot;, quizStartTime);</span>
+<span class="nc" id="L67">        session.setAttribute(&quot;question1Choices&quot;, question1Choices);</span>
+
+<span class="nc" id="L69">        System.out.println(selectedQ1Choice);</span>
+
+
+<span class="nc" id="L72">        return &quot;quiz-question1&quot;;</span>
+    }
+
+    @PostMapping(&quot;/quiz-question1&quot;)
+    public String postQuestion1(@RequestParam String selectedQ1Choice,
+                                HttpSession session) {
+<span class="nc" id="L78">        session.setAttribute(&quot;selectedQ1Choice&quot;, selectedQ1Choice);</span>
+<span class="nc" id="L79">        return &quot;/quiz-question1&quot;;</span>
+    }
+
+    @GetMapping(&quot;/quiz-question2&quot;)
+    public String getQuestion2(HttpServletRequest request,
+                               Model model) {
+
+<span class="nc" id="L86">        HttpSession session = request.getSession();</span>
+<span class="nc" id="L87">        List&lt;Question&gt; ss = (List&lt;Question&gt;) session.getAttribute(&quot;quizQuestions&quot;);</span>
+<span class="nc" id="L88">        List&lt;Choice&gt; question2Choices = questionService.getChoicesByQuestionId(ss.get(1).getId());</span>
+
+<span class="nc" id="L90">        session.setAttribute(&quot;question2Choices&quot;, question2Choices);</span>
+<span class="nc" id="L91">        return &quot;quiz-question2&quot;;</span>
+    }
+
+    @PostMapping(&quot;/quiz-question2&quot;)
+    public String postQuestion2(@RequestParam String selectedQ2Choice,
+                                HttpSession session) {
+<span class="nc" id="L97">        session.setAttribute(&quot;selectedQ2Choice&quot;, selectedQ2Choice);</span>
+<span class="nc" id="L98">        return &quot;/quiz-question2&quot;;</span>
+    }
+
+    @GetMapping(&quot;/quiz-question3&quot;)
+    public String getQuestion3(HttpServletRequest request) {
+
+<span class="nc" id="L104">        HttpSession session = request.getSession();</span>
+<span class="nc" id="L105">        List&lt;Question&gt; ss = (List&lt;Question&gt;) session.getAttribute(&quot;quizQuestions&quot;);</span>
+<span class="nc" id="L106">        List&lt;Choice&gt; question3Choices = questionService.getChoicesByQuestionId(ss.get(2).getId());</span>
+
+<span class="nc" id="L108">        session.setAttribute(&quot;question3Choices&quot;, question3Choices);</span>
+<span class="nc" id="L109">        return &quot;quiz-question3&quot;;</span>
+    }
+
+    @PostMapping(&quot;/quiz-question3&quot;)
+    public String postQuestion3(@RequestParam String selectedQ3Choice,
+                                HttpSession session) {
+<span class="nc" id="L115">        session.setAttribute(&quot;selectedQ3Choice&quot;, selectedQ3Choice);</span>
+<span class="nc" id="L116">        return &quot;/quiz-question3&quot;;</span>
+    }
+
+    @GetMapping(&quot;/quiz-question4&quot;)
+    public String getQuestion4(HttpServletRequest request) {
+
+<span class="nc" id="L122">        HttpSession session = request.getSession();</span>
+<span class="nc" id="L123">        List&lt;Question&gt; ss = (List&lt;Question&gt;) session.getAttribute(&quot;quizQuestions&quot;);</span>
+<span class="nc" id="L124">        List&lt;Choice&gt; question4Choices = questionService.getChoicesByQuestionId(ss.get(3).getId());</span>
+
+<span class="nc" id="L126">        session.setAttribute(&quot;question4Choices&quot;, question4Choices);</span>
+<span class="nc" id="L127">        return &quot;quiz-question4&quot;;</span>
+    }
+
+    @PostMapping(&quot;/quiz-question4&quot;)
+    public String postQuestion4(@RequestParam String selectedQ4Choice,
+                                HttpSession session) {
+<span class="nc" id="L133">        System.out.println(selectedQ4Choice);</span>
+<span class="nc" id="L134">        session.setAttribute(&quot;selectedQ4Choice&quot;, selectedQ4Choice);</span>
+<span class="nc" id="L135">        return &quot;/quiz-question4&quot;;</span>
+    }
+
+    @GetMapping(&quot;/quiz-question5&quot;)
+    public String getQuestion5(HttpServletRequest request) {
+
+<span class="nc" id="L141">        HttpSession session = request.getSession();</span>
+<span class="nc" id="L142">        List&lt;Question&gt; ss = (List&lt;Question&gt;) session.getAttribute(&quot;quizQuestions&quot;);</span>
+<span class="nc" id="L143">        List&lt;Choice&gt; question5Choices = questionService.getChoicesByQuestionId(ss.get(4).getId());</span>
+
+<span class="nc" id="L145">        session.setAttribute(&quot;question5Choices&quot;, question5Choices);</span>
+<span class="nc" id="L146">        return &quot;quiz-question5&quot;;</span>
+    }
+
+    @PostMapping(&quot;/quiz-question5&quot;)
+    public String postQuestion5(@RequestParam String selectedQ5Choice,
+                                HttpSession session) {
+<span class="nc" id="L152">        System.out.println(selectedQ5Choice);</span>
+<span class="nc" id="L153">        session.setAttribute(&quot;selectedQ5Choice&quot;, selectedQ5Choice);</span>
+<span class="nc" id="L154">        return &quot;/quiz-question5&quot;;</span>
+    }
+
+    @GetMapping(&quot;/quiz-result&quot;)
+    public String getQuizResult(HttpSession session,
+                                Model model) {
+<span class="nc" id="L160">        Timestamp quizStartTime = (Timestamp) session.getAttribute(&quot;quizStartTime&quot;);</span>
+<span class="nc" id="L161">        Timestamp quizEndTime = new Timestamp(System.currentTimeMillis());</span>
+
+<span class="nc" id="L163">        List&lt;Question&gt; quizQuestions = (List&lt;Question&gt;) session.getAttribute(&quot;quizQuestions&quot;);</span>
+
+<span class="nc" id="L165">        int q1Id = quizQuestions.get(0).getId();</span>
+<span class="nc" id="L166">        int q2Id = quizQuestions.get(1).getId();</span>
+<span class="nc" id="L167">        int q3Id = quizQuestions.get(2).getId();</span>
+<span class="nc" id="L168">        int q4Id = quizQuestions.get(3).getId();</span>
+<span class="nc" id="L169">        int q5Id = quizQuestions.get(4).getId();</span>
+
+<span class="nc" id="L171">        List&lt;Choice&gt; question1Choices = questionService.getChoicesByQuestionId(q1Id);</span>
+<span class="nc" id="L172">        List&lt;Choice&gt; question2Choices = questionService.getChoicesByQuestionId(q2Id);</span>
+<span class="nc" id="L173">        List&lt;Choice&gt; question3Choices = questionService.getChoicesByQuestionId(q3Id);</span>
+<span class="nc" id="L174">        List&lt;Choice&gt; question4Choices = questionService.getChoicesByQuestionId(q4Id);</span>
+<span class="nc" id="L175">        List&lt;Choice&gt; question5Choices = questionService.getChoicesByQuestionId(q5Id);</span>
+
+<span class="nc" id="L177">        List&lt;Boolean&gt; questionResults = new ArrayList&lt;&gt;();</span>
+
+<span class="nc" id="L179">        String q1UserChoice = (String) session.getAttribute(&quot;selectedQ1Choice&quot;);</span>
+<span class="nc" id="L180">        String q2UserChoice = (String) session.getAttribute(&quot;selectedQ2Choice&quot;);</span>
+<span class="nc" id="L181">        String q3UserChoice = (String) session.getAttribute(&quot;selectedQ3Choice&quot;);</span>
+<span class="nc" id="L182">        String q4UserChoice = (String) session.getAttribute(&quot;selectedQ4Choice&quot;);</span>
+<span class="nc" id="L183">        String q5UserChoice = (String) session.getAttribute(&quot;selectedQ5Choice&quot;);</span>
+
+<span class="nc" id="L185">        boolean q1Result = questionService.checkAns(q1UserChoice, q1Id);</span>
+<span class="nc" id="L186">        boolean q2Result = questionService.checkAns(q2UserChoice, q2Id);</span>
+<span class="nc" id="L187">        boolean q3Result = questionService.checkAns(q3UserChoice, q3Id);</span>
+<span class="nc" id="L188">        boolean q4Result = questionService.checkAns(q4UserChoice, q4Id);</span>
+<span class="nc" id="L189">        boolean q5Result = questionService.checkAns(q5UserChoice, q5Id);</span>
+
+
+<span class="nc" id="L192">        System.out.println(&quot;q1UserChoice: &quot; + q1UserChoice);</span>
+<span class="nc" id="L193">        System.out.println(&quot;q1CorrectAnswer: &quot; + questionService.getAnswerByQuestionId(q1Id));</span>
+<span class="nc" id="L194">        System.out.println(&quot;q1Result: &quot; + q1Result);</span>
+<span class="nc" id="L195">        questionResults.add(q1Result);</span>
+<span class="nc" id="L196">        questionResults.add(q2Result);</span>
+<span class="nc" id="L197">        questionResults.add(q3Result);</span>
+<span class="nc" id="L198">        questionResults.add(q4Result);</span>
+<span class="nc" id="L199">        questionResults.add(q5Result);</span>
+
+<span class="nc" id="L201">        int quizPoint = 0;</span>
+
+<span class="nc bnc" id="L203" title="All 2 branches missed.">        for (boolean result : questionResults) {</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">            if (result == true) {</span>
+<span class="nc" id="L205">                quizPoint++;</span>
+            }
+<span class="nc" id="L207">        }</span>
+
+<span class="nc bnc" id="L209" title="All 2 branches missed.">        boolean isPass = quizPoint &gt;= 3 ? true : false;</span>
+
+<span class="nc" id="L211">        model.addAttribute(&quot;q1Result&quot;, q1Result);</span>
+<span class="nc" id="L212">        model.addAttribute(&quot;q2Result&quot;, q2Result);</span>
+<span class="nc" id="L213">        model.addAttribute(&quot;q3Result&quot;, q3Result);</span>
+<span class="nc" id="L214">        model.addAttribute(&quot;q4Result&quot;, q4Result);</span>
+<span class="nc" id="L215">        model.addAttribute(&quot;q5Result&quot;, q5Result);</span>
+<span class="nc" id="L216">        model.addAttribute(&quot;isPass&quot;, isPass);</span>
+<span class="nc" id="L217">        model.addAttribute(&quot;quizStartTime&quot;, quizStartTime);</span>
+<span class="nc" id="L218">        model.addAttribute(&quot;quizEndTime&quot;, quizEndTime);</span>
+
+<span class="nc" id="L220">        String category = (String) session.getAttribute(&quot;selectedCategory&quot;);</span>
+
+<span class="nc" id="L222">        User currentUser = (User) session.getAttribute(&quot;user&quot;);</span>
+<span class="nc" id="L223">        QuizResult quizResult = new QuizResult(category, currentUser.getId(), quizStartTime, quizEndTime, isPass);</span>
+
+<span class="nc" id="L225">        resultService.createNewQuizResult(quizResult);</span>
+
+<span class="nc" id="L227">        int qrId = resultService.getLatestId();</span>
+
+<span class="nc" id="L229">        List&lt;QuestResult&gt; questResults = new ArrayList&lt;&gt;();</span>
+
+<span class="nc" id="L231">        questResults.add(new QuestResult(qrId, q1Id, q1UserChoice));</span>
+<span class="nc" id="L232">        questResults.add(new QuestResult(qrId, q2Id, q2UserChoice));</span>
+<span class="nc" id="L233">        questResults.add(new QuestResult(qrId, q3Id, q3UserChoice));</span>
+<span class="nc" id="L234">        questResults.add(new QuestResult(qrId, q4Id, q4UserChoice));</span>
+<span class="nc" id="L235">        questResults.add(new QuestResult(qrId, q5Id, q5UserChoice));</span>
+
+<span class="nc" id="L237">        resultService.createNewQuestResults(questResults);</span>
+
+<span class="nc" id="L239">        return &quot;quiz-result&quot;;</span>
+    }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

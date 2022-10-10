@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FeedbackDAOHibernateImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">QuizWebApp</a> &gt; <a href="index.source.html" class="el_package">QuizWebApp.dao.hibernate</a> &gt; <span class="el_source">FeedbackDAOHibernateImpl.java</span></div><h1>FeedbackDAOHibernateImpl.java</h1><pre class="source lang-java linenums">package QuizWebApp.dao.hibernate;
+
+import QuizWebApp.dao.AbstractHibernateDAO;
+import QuizWebApp.dao.FeedbackDAO;
+import QuizWebApp.domain.Contact;
+import QuizWebApp.domain.Feedback;
+import QuizWebApp.domain.hiberntae.ContactHibernate;
+import QuizWebApp.domain.hiberntae.FeedbackHibernate;
+import org.springframework.stereotype.Repository;
+
+import javax.persistence.Query;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Repository(&quot;feedbackDAOHibernateImpl&quot;)
+public class FeedbackDAOHibernateImpl extends AbstractHibernateDAO&lt;FeedbackHibernate&gt; implements FeedbackDAO {
+
+<span class="nc" id="L18">    public FeedbackDAOHibernateImpl() {</span>
+<span class="nc" id="L19">        setClazz(FeedbackHibernate.class);</span>
+<span class="nc" id="L20">    }</span>
+
+    @Override
+    public Feedback createNewFeedback(Feedback feedback) {
+<span class="nc" id="L24">        Integer feedbackId = add((FeedbackHibernate) feedback);</span>
+<span class="nc" id="L25">        return getFeedbackById(feedbackId);</span>
+    }
+
+    @Override
+    public List&lt;Feedback&gt; getAllFeedback() {
+<span class="nc" id="L30">        List&lt;FeedbackHibernate&gt; list = this.getAll();</span>
+<span class="nc" id="L31">        return list.stream().map(feedback -&gt; (Feedback) feedback).collect(Collectors.toList());</span>
+    }
+
+    public boolean isFeedbackIdValid(int id) {
+<span class="nc" id="L35">        Query query = getCurrentSession().createQuery(&quot;from Feedback where id = :id&quot;);</span>
+<span class="nc" id="L36">        query.setParameter(&quot;id&quot;, id);</span>
+<span class="nc bnc" id="L37" title="All 2 branches missed.">        return query.getResultList().size() == 0;</span>
+    }
+
+    public Feedback getFeedbackById(Integer id) {
+<span class="nc" id="L41">        return findById(id);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

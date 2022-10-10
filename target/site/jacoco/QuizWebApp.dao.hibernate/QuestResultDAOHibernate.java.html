@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>QuestResultDAOHibernate.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">QuizWebApp</a> &gt; <a href="index.source.html" class="el_package">QuizWebApp.dao.hibernate</a> &gt; <span class="el_source">QuestResultDAOHibernate.java</span></div><h1>QuestResultDAOHibernate.java</h1><pre class="source lang-java linenums">package QuizWebApp.dao.hibernate;
+
+import QuizWebApp.dao.AbstractHibernateDAO;
+import QuizWebApp.dao.QuestResultDAO;
+import QuizWebApp.dao.QuestionDAO;
+import QuizWebApp.domain.QuestResult;
+import QuizWebApp.domain.hiberntae.QuestResultHibernate;
+import QuizWebApp.domain.hiberntae.QuestionHibernate;
+import org.springframework.stereotype.Repository;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Repository(&quot;questResultDAOHibernateImpl&quot;)
+<span class="nc" id="L16">public class QuestResultDAOHibernate extends AbstractHibernateDAO&lt;QuestResultHibernate&gt; implements QuestResultDAO {</span>
+    @Override
+    public List&lt;QuestResult&gt; getQuestResultByQuizId(int id) {
+<span class="nc" id="L19">        List&lt;QuestResultHibernate&gt; list = this.getAll();</span>
+<span class="nc bnc" id="L20" title="All 2 branches missed.">        list = list.stream().filter(qr -&gt; qr.getQuizResultId() == id).collect(Collectors.toList());</span>
+
+<span class="nc" id="L22">        List&lt;QuestResult&gt; questResults = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L23" title="All 2 branches missed.">        for (int i = 0; i &lt; list.size(); i++) {</span>
+<span class="nc" id="L24">            questResults.add(list.get(i));</span>
+        }
+
+<span class="nc" id="L27">        return questResults;</span>
+    }
+
+    @Override
+    public void createQuestResults(List&lt;QuestResult&gt; questResultList) {
+<span class="nc bnc" id="L32" title="All 2 branches missed.">        for (int i = 0; i &lt; questResultList.size(); i++) {</span>
+<span class="nc" id="L33">            add((QuestResultHibernate) questResultList.get(i));</span>
+        }
+<span class="nc" id="L35">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

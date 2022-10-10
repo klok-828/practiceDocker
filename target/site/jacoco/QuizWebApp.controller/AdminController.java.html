@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AdminController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">QuizWebApp</a> &gt; <a href="index.source.html" class="el_package">QuizWebApp.controller</a> &gt; <span class="el_source">AdminController.java</span></div><h1>AdminController.java</h1><pre class="source lang-java linenums">package QuizWebApp.controller;
+
+import QuizWebApp.domain.*;
+import QuizWebApp.service.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
+import java.util.List;
+
+@Controller
+public class AdminController {
+    private final UserService userService;
+    private final QuestionService questionService;
+
+    private final ContactService contactService;
+    private final ResultService resultService;
+    private final FeedbackService feedbackService;
+
+    @Autowired
+<span class="nc" id="L27">    AdminController(UserService userService, ResultService resultService, QuestionService questionService, ContactService contactService, FeedbackService feedbackService) {</span>
+<span class="nc" id="L28">        this.userService = userService;</span>
+<span class="nc" id="L29">        this.resultService = resultService;</span>
+<span class="nc" id="L30">        this.questionService = questionService;</span>
+<span class="nc" id="L31">        this.contactService = contactService;</span>
+<span class="nc" id="L32">        this.feedbackService = feedbackService;</span>
+<span class="nc" id="L33">    }</span>
+
+    @GetMapping(&quot;/admin&quot;)
+    public String getAdmin(Model model,
+                           HttpSession session) {
+<span class="nc" id="L38">        User user = (User) session.getAttribute(&quot;user&quot;);</span>
+
+<span class="nc bnc" id="L40" title="All 2 branches missed.">        if (!user.isAdmin()) {</span>
+<span class="nc" id="L41">            return &quot;error&quot;;</span>
+        }
+
+<span class="nc" id="L44">        List&lt;String&gt; questionCategory = questionService.getAllCategory();</span>
+<span class="nc" id="L45">        List&lt;Contact&gt; contacts = contactService.getAllContacts();</span>
+<span class="nc" id="L46">        List&lt;User&gt; users = userService.getAllUsers();</span>
+<span class="nc" id="L47">        List&lt;Question&gt; questions = questionService.getAllQuestions();</span>
+<span class="nc" id="L48">        List&lt;Feedback&gt; feedbacks = feedbackService.getAllFeedbacks();</span>
+<span class="nc" id="L49">        List&lt;QuizResult&gt; quizResults = resultService.getAllQuizResult();</span>
+
+<span class="nc" id="L51">        session.setAttribute(&quot;questionCategory&quot;, questionCategory);</span>
+<span class="nc" id="L52">        session.setAttribute(&quot;users&quot;, users);</span>
+
+<span class="nc" id="L54">        model.addAttribute(&quot;contacts&quot;, contacts);</span>
+<span class="nc" id="L55">        model.addAttribute(&quot;quizResults&quot;, quizResults);</span>
+<span class="nc" id="L56">        model.addAttribute(&quot;questions&quot;, questions);</span>
+<span class="nc" id="L57">        model.addAttribute(&quot;feedbacks&quot;, feedbacks);</span>
+
+<span class="nc" id="L59">        return &quot;admin&quot;;</span>
+    }
+
+    @PostMapping(&quot;/admin&quot;)
+    public String postAdmin(@RequestParam String categoryFilter,
+                            @RequestParam int userFilter,
+                            Model model) {
+<span class="nc" id="L66">        System.out.println(categoryFilter);</span>
+<span class="nc" id="L67">        List&lt;User&gt; users = userService.getAllUsers();</span>
+<span class="nc" id="L68">        List&lt;Question&gt; questions = questionService.getAllQuestions();</span>
+<span class="nc" id="L69">        List&lt;Feedback&gt; feedbacks = feedbackService.getAllFeedbacks();</span>
+
+<span class="nc" id="L71">        List&lt;QuizResult&gt; quizResults = new ArrayList&lt;&gt;();</span>
+
+<span class="nc" id="L73">        System.out.println();</span>
+<span class="nc" id="L74">        System.out.println(&quot;cate: &quot; + categoryFilter);</span>
+<span class="nc" id="L75">        System.out.println(&quot;user: &quot; + userFilter);</span>
+        // 0 mean all in user filter
+<span class="nc bnc" id="L77" title="All 4 branches missed.">        if (categoryFilter != &quot;all&quot; &amp;&amp; userFilter == 0) {</span>
+<span class="nc" id="L78">            quizResults = resultService.getAllQuizResultByCategory(categoryFilter);</span>
+<span class="nc bnc" id="L79" title="All 4 branches missed.">        } else if (categoryFilter != &quot;all&quot; &amp;&amp; userFilter != 0) {</span>
+<span class="nc" id="L80">            quizResults = resultService.getQuizResultByCategoryAndId(categoryFilter, userFilter);</span>
+<span class="nc bnc" id="L81" title="All 4 branches missed.">        } else if (categoryFilter == &quot;all&quot; &amp;&amp; userFilter != 0) {</span>
+<span class="nc" id="L82">            quizResults = resultService.getQuizResultByUserId(userFilter);</span>
+        } else {
+<span class="nc" id="L84">            quizResults = resultService.getAllQuizResult();</span>
+        }
+
+<span class="nc bnc" id="L87" title="All 2 branches missed.">        System.out.println(userFilter == 12);</span>
+<span class="nc" id="L88">        System.out.println(quizResults);</span>
+
+//        if (categoryFilter.equals(&quot;all&quot;) &amp;&amp; userFilter.equals(&quot;all&quot;)) {
+//            quizResults = resultService.getAllQuizResult();
+//        } else {
+//            quizResults = resultService.getAllQuizResultByCategory(categoryFilter);
+//        }
+
+<span class="nc" id="L96">        model.addAttribute(&quot;quizResults&quot;, quizResults);</span>
+<span class="nc" id="L97">        model.addAttribute(&quot;users&quot;, users);</span>
+<span class="nc" id="L98">        model.addAttribute(&quot;questions&quot;, questions);</span>
+<span class="nc" id="L99">        model.addAttribute(&quot;feedbacks&quot;, feedbacks);</span>
+<span class="nc" id="L100">        return &quot;admin&quot;;</span>
+    }
+
+    @GetMapping(&quot;/admin/user/{userid}&quot;)
+    public String changeUserStatus(@PathVariable int userid) {
+<span class="nc" id="L105">        userService.reverseUserStatusById(userid);</span>
+<span class="nc" id="L106">        return &quot;redirect:/admin&quot;;</span>
+    }
+
+    @GetMapping(&quot;/admin/question/{questionid}&quot;)
+    public String changeQuestionStatus(@PathVariable int questionid) {
+<span class="nc" id="L111">        questionService.reverseQuestionStatus(questionid);</span>
+<span class="nc" id="L112">        return &quot;redirect:/admin&quot;;</span>
+    }
+
+    @GetMapping(&quot;/quizDetails/{id}&quot;)
+    public String getQuizResultById(@PathVariable int id,
+                                    Model model) {
+<span class="nc" id="L118">        QuizResult quizResult = resultService.getQuizResultById(id);</span>
+<span class="nc" id="L119">        List&lt;QuestResult&gt; questResults = resultService.getQuestResultByQuizId(id);</span>
+
+<span class="nc" id="L121">        int q1Id = questResults.get(0).getQuestionId();</span>
+<span class="nc" id="L122">        int q2Id = questResults.get(1).getQuestionId();</span>
+<span class="nc" id="L123">        int q3Id = questResults.get(2).getQuestionId();</span>
+<span class="nc" id="L124">        int q4Id = questResults.get(3).getQuestionId();</span>
+<span class="nc" id="L125">        int q5Id = questResults.get(4).getQuestionId();</span>
+
+<span class="nc" id="L127">        List&lt;Question&gt; quizQuestions = new ArrayList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L129" title="All 2 branches missed.">        for (int i = 0; i &lt; questResults.size(); i++) {</span>
+<span class="nc" id="L130">            quizQuestions.add(questionService.getQuestionById(questResults.get(i).getQuestionId()));</span>
+        }
+
+<span class="nc" id="L133">        String selectedQ1Choice = questResults.get(0).getUserChoice();</span>
+<span class="nc" id="L134">        String selectedQ2Choice = questResults.get(1).getUserChoice();</span>
+<span class="nc" id="L135">        String selectedQ3Choice = questResults.get(2).getUserChoice();</span>
+<span class="nc" id="L136">        String selectedQ4Choice = questResults.get(3).getUserChoice();</span>
+<span class="nc" id="L137">        String selectedQ5Choice = questResults.get(4).getUserChoice();</span>
+
+<span class="nc" id="L139">        List&lt;Choice&gt; question1Choices = questionService.getChoicesByQuestionId(q1Id);</span>
+<span class="nc" id="L140">        List&lt;Choice&gt; question2Choices = questionService.getChoicesByQuestionId(q2Id);</span>
+<span class="nc" id="L141">        List&lt;Choice&gt; question3Choices = questionService.getChoicesByQuestionId(q3Id);</span>
+<span class="nc" id="L142">        List&lt;Choice&gt; question4Choices = questionService.getChoicesByQuestionId(q4Id);</span>
+<span class="nc" id="L143">        List&lt;Choice&gt; question5Choices = questionService.getChoicesByQuestionId(q5Id);</span>
+
+        //Add All questions choices
+<span class="nc" id="L146">        model.addAttribute(&quot;question1Choices&quot;, question1Choices);</span>
+<span class="nc" id="L147">        model.addAttribute(&quot;question2Choices&quot;, question2Choices);</span>
+<span class="nc" id="L148">        model.addAttribute(&quot;question3Choices&quot;, question3Choices);</span>
+<span class="nc" id="L149">        model.addAttribute(&quot;question4Choices&quot;, question4Choices);</span>
+<span class="nc" id="L150">        model.addAttribute(&quot;question5Choices&quot;, question5Choices);</span>
+        //Add user choice for every questions
+<span class="nc" id="L152">        model.addAttribute(&quot;selectedQ1Choice&quot;, selectedQ1Choice);</span>
+<span class="nc" id="L153">        model.addAttribute(&quot;selectedQ2Choice&quot;, selectedQ2Choice);</span>
+<span class="nc" id="L154">        model.addAttribute(&quot;selectedQ3Choice&quot;, selectedQ3Choice);</span>
+<span class="nc" id="L155">        model.addAttribute(&quot;selectedQ4Choice&quot;, selectedQ4Choice);</span>
+<span class="nc" id="L156">        model.addAttribute(&quot;selectedQ5Choice&quot;, selectedQ5Choice);</span>
+
+<span class="nc" id="L158">        model.addAttribute(&quot;quizQuestions&quot;, quizQuestions);</span>
+<span class="nc" id="L159">        model.addAttribute(&quot;quizResult&quot;, quizResult);</span>
+<span class="nc" id="L160">        return &quot;quiz-result-details&quot;;</span>
+    }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

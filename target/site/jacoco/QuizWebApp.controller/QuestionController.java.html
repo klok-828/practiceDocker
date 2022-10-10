@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>QuestionController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">QuizWebApp</a> &gt; <a href="index.source.html" class="el_package">QuizWebApp.controller</a> &gt; <span class="el_source">QuestionController.java</span></div><h1>QuestionController.java</h1><pre class="source lang-java linenums">package QuizWebApp.controller;
+
+import QuizWebApp.domain.Choice;
+import QuizWebApp.domain.Question;
+import QuizWebApp.domain.User;
+import QuizWebApp.service.QuestionService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Controller
+public class QuestionController {
+    private QuestionService questionService;
+
+
+    @Autowired
+<span class="nc" id="L23">    public QuestionController(QuestionService questionService) { this.questionService = questionService; }</span>
+
+    @GetMapping(&quot;/add-question&quot;)
+    public String getAddQuestion(Model model) {
+<span class="nc" id="L27">        List&lt;String&gt; questionCategory = questionService.getAllCategory();</span>
+<span class="nc" id="L28">        model.addAttribute(&quot;questionCategory&quot;, questionCategory);</span>
+
+<span class="nc" id="L30">        return &quot;add-question&quot;;</span>
+    }
+
+    @PostMapping(&quot;/add-question&quot;)
+    public String postAddQuestion(@RequestParam String description,
+                                  @RequestParam String category,
+                                  @RequestParam String choice1,
+                                  @RequestParam String choice2,
+                                  @RequestParam String choice3,
+                                  @RequestParam String choice4,
+                                  @RequestParam String choice5,
+                                  @RequestParam int answer) {
+
+<span class="nc" id="L43">        Question question = new Question(category, description, true);</span>
+
+<span class="nc" id="L45">        questionService.createQuestion(question);</span>
+
+<span class="nc" id="L47">        int qid = questionService.getLatestId();</span>
+
+<span class="nc" id="L49">        List&lt;Choice&gt; choices = new ArrayList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L51" title="All 2 branches missed.">        choices.add(new Choice(qid, choice1, choices.size() == answer));</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">        choices.add(new Choice(qid, choice2, choices.size() == answer));</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">        choices.add(new Choice(qid, choice3, choices.size() == answer));</span>
+<span class="nc bnc" id="L54" title="All 2 branches missed.">        choices.add(new Choice(qid, choice4, choices.size() == answer));</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">        choices.add(new Choice(qid, choice5, choices.size() == answer));</span>
+
+<span class="nc" id="L57">        questionService.createChoices(choices);</span>
+
+<span class="nc" id="L59">        return &quot;redirect:/admin&quot;;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
