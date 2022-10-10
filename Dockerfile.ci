@@ -1,4 +1,4 @@
 FROM openjdk:8
 EXPOSE 8080
-COPY target/QuizWebApp-correct.jar QuizWebApp-correct.jar
-ENTRYPOINT ["java", "-jar", "/QuizWebApp-correct.jar"]
+COPY target/QuizWebApp-0.0.1-SNAPSHOT.jar QuizWebApp-0.0.1-SNAPSHOT.jar
+ENTRYPOINT ["java", "-jar", "/QuizWebApp-0.0.1-SNAPSHOT.jar"]
